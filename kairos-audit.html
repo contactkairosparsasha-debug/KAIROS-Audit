@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAIROS — Audit de Maîtrise</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --noir: #0a0908;
+    --noir-doux: #111010;
+    --or: #c9a84c;
+    --or-pale: #e8d5a3;
+    --or-ombre: #6b5420;
+    --blanc: #f5f0e8;
+    --gris: #4a4744;
+    --gris-clair: #8a8580;
+    --bio: #9b4040;
+    --bio-pale: #d4a0a0;
+    --bio-sombre: #5a2020;
+    --bas: #7a8fa6;
+    --bas-pale: #c8d8e8;
+    --bas-sombre: #2a3a4a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    background: var(--noir);
+    color: var(--blanc);
+    font-family: 'Montserrat', sans-serif;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.4;
+  }
+
+  .line-left {
+    position: fixed;
+    left: 48px; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--or-ombre) 30%, var(--or-ombre) 70%, transparent);
+    opacity: 0.4;
+    transition: background 1.2s ease;
+  }
+  body.part2 .line-left {
+    background: linear-gradient(to bottom, transparent, var(--bio-sombre) 30%, var(--bio-sombre) 70%, transparent);
+  }
+  body.part3 .line-left {
+    background: linear-gradient(to bottom, transparent, var(--bas-sombre) 30%, var(--bas-sombre) 70%, transparent);
+  }
+
+  .logo {
+    position: fixed;
+    top: 44px; left: 48px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem; font-weight: 400;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--or-pale);
+    z-index: 10;
+    transition: color 1s ease;
+  }
+  body.part2 .logo { color: var(--bio-pale); }
+  body.part3 .logo { color: var(--bas-pale); }
+
+  .partie-badge {
+    position: fixed;
+    top: 48px; right: 8%;
+    font-size: 0.58rem; letter-spacing: 0.32em;
+    text-transform: uppercase; color: var(--gris);
+    z-index: 10;
+  }
+
+  .progress-bar {
+    position: fixed;
+    bottom: 0; left: 0; height: 2px;
+    background: linear-gradient(to right, var(--or-ombre), var(--or));
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1), background 1.2s ease;
+    z-index: 50;
+  }
+  body.part2 .progress-bar {
+    background: linear-gradient(to right, var(--bio-sombre), var(--bio-pale));
+  }
+  body.part3 .progress-bar {
+    background: linear-gradient(to right, var(--bas-sombre), var(--bas-pale));
+  }
+
+  .q-number {
+    position: fixed;
+    right: 7%; bottom: 8%;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(5rem, 14vw, 13rem);
+    font-weight: 300;
+    color: rgba(201,168,76,0.04);
+    pointer-events: none; z-index: 0;
+    transition: color 1s ease;
+  }
+  body.part2 .q-number { color: rgba(155,64,64,0.06); }
+  body.part3 .q-number { color: rgba(122,143,166,0.07); }
+
+  /* SCREENS */
+  .screen {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 80px 10% 60px 12%;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.75s ease;
+    overflow-y: auto;
+  }
+  .screen.active { opacity: 1; pointer-events: all; }
+
+  @keyframes up {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .screen.active > * { opacity: 0; animation: up 0.6s ease forwards; }
+  .screen.active > *:nth-child(1) { animation-delay: 0.05s; }
+  .screen.active > *:nth-child(2) { animation-delay: 0.15s; }
+  .screen.active > *:nth-child(3) { animation-delay: 0.25s; }
+  .screen.active > *:nth-child(4) { animation-delay: 0.35s; }
+  .screen.active > *:nth-child(5) { animation-delay: 0.45s; }
+  .screen.active > *:nth-child(6) { animation-delay: 0.55s; }
+  .screen.active > *:nth-child(7) { animation-delay: 0.62s; }
+
+  /* TYPOGRAPHY */
+  .eyebrow {
+    font-size: 0.65rem; font-weight: 300;
+    letter-spacing: 0.36em; text-transform: uppercase;
+    color: var(--or); margin-bottom: 2.4rem;
+  }
+  .eyebrow.bio { color: var(--bio-pale); }
+  .eyebrow.bas { color: var(--bas-pale); }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3.2rem, 7.5vw, 6.5rem);
+    font-weight: 300; line-height: 1.05;
+    color: var(--blanc); margin-bottom: 1.4rem; max-width: 680px;
+  }
+  h1 em { font-style: italic; color: var(--or-pale); }
+
+  .body-text {
+    font-size: 0.8rem; font-weight: 300;
+    color: var(--gris-clair); letter-spacing: 0.04em;
+    line-height: 1.95; max-width: 440px; margin-bottom: 0.8rem;
+  }
+
+  .step-ind {
+    font-size: 0.62rem; font-weight: 300;
+    letter-spacing: 0.38em; text-transform: uppercase;
+    color: var(--or); margin-bottom: 1.1rem;
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+  .step-ind.bio { color: var(--bio-pale); }
+  .step-ind.bas { color: var(--bas-pale); }
+  .step-line { display: flex; gap: 5px; align-items: center; }
+  .sd { width: 18px; height: 1px; background: var(--gris); transition: all 0.4s; }
+  .sd.done  { background: var(--or);      width: 28px; }
+  .sd.cur   { background: var(--or); }
+  .sd.done-b{ background: var(--bio-pale); width: 28px; }
+  .sd.cur-b { background: var(--bio-pale); }
+  .sd.done-c{ background: var(--bas-pale); width: 28px; }
+  .sd.cur-c { background: var(--bas-pale); }
+
+  .q-screen h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.65rem, 3.6vw, 2.9rem);
+    font-weight: 300; line-height: 1.28;
+    color: var(--blanc); max-width: 660px; margin-bottom: 0.5rem;
+  }
+  .q-screen h2 em     { font-style: italic; color: var(--or-pale); }
+  .q-screen h2 em.bio { color: var(--bio-pale); }
+  .q-screen h2 em.bas { color: var(--bas-pale); }
+
+  .q-sub {
+    font-size: 0.74rem; font-weight: 300;
+    color: var(--gris-clair); letter-spacing: 0.04em;
+    margin-bottom: 2.2rem; max-width: 500px; line-height: 1.85;
+  }
+
+  /* BUTTON */
+  .btn {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: transparent;
+    border: 1px solid var(--or-ombre);
+    color: var(--or-pale);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.66rem; font-weight: 500;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    padding: 0.95rem 1.9rem;
+    cursor: pointer; position: relative; overflow: hidden;
+    transition: all 0.3s ease; flex-shrink: 0;
+  }
+  .btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--or);
+    transform: translateX(-100%); transition: transform 0.4s ease; z-index: -1;
+  }
+  .btn:hover { color: var(--noir); border-color: var(--or); }
+  .btn:hover::before { transform: translateX(0); }
+  .btn svg { transition: transform 0.3s; }
+  .btn:hover svg { transform: translateX(4px); }
+
+  .btn.b2 { border-color: var(--bio-sombre); color: var(--bio-pale); }
+  .btn.b2::before { background: var(--bio-pale); }
+  .btn.b2:hover { color: var(--noir); border-color: var(--bio-pale); }
+  .btn.b3 { border-color: var(--bas-sombre); color: var(--bas-pale); }
+  .btn.b3::before { background: var(--bas-pale); }
+  .btn.b3:hover { color: var(--noir); border-color: var(--bas-pale); }
+
+  .dis { opacity: 0.22; pointer-events: none; }
+
+  /* SLIDER */
+  .sl-wrap { width: 100%; max-width: 510px; margin-bottom: 2rem; }
+  .sl-labs {
+    display: flex; justify-content: space-between;
+    font-size: 0.58rem; letter-spacing: 0.1em;
+    color: var(--gris); text-transform: uppercase; margin-bottom: 0.9rem;
+  }
+  .sl-track {
+    position: relative; height: 2px;
+    background: var(--gris);
+    margin-bottom: 1.3rem; cursor: pointer;
+  }
+  .sl-fill {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: linear-gradient(to right, var(--or-ombre), var(--or));
+    transition: width 0.1s;
+  }
+  .sl-fill.b { background: linear-gradient(to right, var(--bio-sombre), var(--bio-pale)); }
+  .sl-fill.c { background: linear-gradient(to right, var(--bas-sombre), var(--bas-pale)); }
+  .sl-thumb {
+    position: absolute; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 15px; height: 15px;
+    background: var(--or); border-radius: 50%;
+    cursor: grab;
+    box-shadow: 0 0 18px rgba(201,168,76,0.4);
+    transition: left 0.1s;
+  }
+  .sl-thumb.b { background: var(--bio-pale); box-shadow: 0 0 18px rgba(212,160,160,0.4); }
+  .sl-thumb.c { background: var(--bas-pale); box-shadow: 0 0 18px rgba(200,216,232,0.35); }
+  .sl-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.4rem; font-weight: 300;
+    color: var(--or); line-height: 1; margin-bottom: 0.25rem;
+  }
+  .sl-val.b { color: var(--bio-pale); }
+  .sl-val.c { color: var(--bas-pale); }
+  .sl-lbl {
+    font-size: 0.64rem; font-weight: 300;
+    letter-spacing: 0.17em; text-transform: uppercase;
+    color: var(--gris-clair); min-height: 1.1em;
+  }
+
+  /* CARDS */
+  .cards { display: flex; gap: 1.3rem; max-width: 570px; margin-bottom: 2rem; flex-wrap: wrap; }
+  .card {
+    flex: 1; min-width: 170px;
+    border: 1px solid var(--gris);
+    padding: 1.4rem 1.2rem;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .card:hover { border-color: var(--or-ombre); background: rgba(201,168,76,0.03); }
+  .card.sel  { border-color: var(--or); background: rgba(201,168,76,0.07); }
+  .card.sel .ct { color: var(--or-pale); }
+  .card.bio-card:hover { border-color: var(--bio); background: rgba(155,64,64,0.04); }
+  .card.bio-card.sel  { border-color: var(--bio-pale); background: rgba(155,64,64,0.08); }
+  .card.bio-card.sel .ct { color: var(--bio-pale); }
+  .ci { font-size: 1.3rem; margin-bottom: 0.5rem; display: block; }
+  .ct { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400; color: var(--blanc); margin-bottom: 0.3rem; }
+  .cd { font-size: 0.68rem; font-weight: 300; color: var(--gris-clair); line-height: 1.65; }
+
+  /* INPUT */
+  .inp-wrap { width: 100%; max-width: 510px; margin-bottom: 2rem; }
+  .inp {
+    width: 100%; background: transparent;
+    border: none; border-bottom: 1px solid var(--gris);
+    color: var(--blanc);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem; font-weight: 300;
+    padding: 0.65rem 0; outline: none;
+    caret-color: var(--or);
+    transition: border-color 0.3s;
+  }
+  .inp.b { caret-color: var(--bio-pale); }
+  .inp.c { caret-color: var(--or); }
+  .inp:focus { border-bottom-color: var(--or); }
+  .inp.b:focus { border-bottom-color: var(--bio-pale); }
+  .inp.c:focus { border-bottom-color: var(--or); }
+  .inp::placeholder { color: var(--gris); font-style: italic; }
+  .inp-hint { font-size: 0.6rem; letter-spacing: 0.1em; color: var(--gris); margin-top: 0.6rem; text-transform: uppercase; }
+
+  .num-row { display: flex; align-items: baseline; gap: 0.7rem; margin-bottom: 0.8rem; }
+  .num-inp {
+    background: transparent; border: none;
+    border-bottom: 1px solid var(--gris);
+    color: var(--bio-pale);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem; font-weight: 300;
+    width: 110px; outline: none;
+    padding: 0.3rem 0; caret-color: var(--bio-pale);
+    transition: border-color 0.3s;
+  }
+  .num-inp:focus { border-bottom-color: var(--bio-pale); }
+  .num-unit { font-size: 0.68rem; font-weight: 300; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris-clair); }
+
+  /* INTERLUDE */
+  #interlude { background: var(--noir-doux); }
+  .int-line { width: 36px; height: 1px; background: var(--bio); margin-bottom: 2.2rem; }
+  #interlude h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+    font-weight: 300; line-height: 1.1;
+    color: var(--blanc); margin-bottom: 0.9rem;
+  }
+  #interlude h2 em { font-style: italic; color: var(--bio-pale); }
+
+  /* RESULT */
+  #result { padding-top: 90px; padding-bottom: 80px; overflow-y: auto; }
+  .res-tag { font-size: 0.58rem; letter-spacing: 0.38em; text-transform: uppercase; margin-bottom: 0.3rem; }
+  .res-tag.p1 { color: var(--or); }
+  .res-tag.p2 { color: var(--bio-pale); margin-top: 1.8rem; }
+  .res-tag.p3 { color: var(--bas-pale); margin-top: 1.8rem; }
+  #result h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.9rem, 4vw, 3.2rem);
+    font-weight: 300; color: var(--blanc);
+    margin-bottom: 0.2rem; line-height: 1.1;
+  }
+  #result h2 em     { font-style: italic; color: var(--or-pale); }
+  #result h2 em.bio { color: var(--bio-pale); }
+  .r-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1px; max-width: 520px;
+    background: var(--gris); margin: 1.3rem 0;
+  }
+  .r-cell { background: var(--noir); padding: 1rem 1.2rem; }
+  .r-lbl { font-size: 0.56rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gris-clair); margin-bottom: 0.3rem; }
+  .r-val { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; color: var(--or-pale); }
+  .r-val.b { color: var(--bio-pale); }
+  .r-val.c { color: var(--bas-pale); }
+
+  #interlude2 { background: var(--noir-doux); }
+  .int-line2 { width: 36px; height: 1px; background: var(--or-ombre); margin-bottom: 2.2rem; }
+  #interlude2 h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+    font-weight: 300; line-height: 1.1;
+    color: var(--blanc); margin-bottom: 0.9rem;
+  }
+  #interlude2 h2 em { font-style: italic; color: var(--or-pale); }
+
+  .textarea-inp {
+    width: 100%; max-width: 510px;
+    background: transparent;
+    border: none; border-bottom: 1px solid var(--gris);
+    color: var(--blanc);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem; font-weight: 300;
+    padding: 0.65rem 0; outline: none;
+    caret-color: var(--or);
+    resize: none; line-height: 1.6;
+    transition: border-color 0.3s;
+    min-height: 3.5rem;
+  }
+  .textarea-inp:focus { border-bottom-color: var(--or); }
+  .textarea-inp::placeholder { color: var(--gris); font-style: italic; }
+  .verdict { max-width: 490px; font-size: 0.78rem; font-weight: 300; color: var(--gris-clair); line-height: 1.95; margin-bottom: 1.2rem; letter-spacing: 0.03em; }
+  .verdict strong { color: var(--blanc); font-weight: 400; }
+  .divider { width: 100%; max-width: 520px; height: 1px; background: linear-gradient(to right, var(--or-ombre), transparent); margin: 0.4rem 0 1.2rem; }
+
+  .arr { width: 16px; height: 10px; }
+
+  /* CTA */
+  .kairos-cta {
+    max-width: 520px;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+  }
+  .cta-line {
+    width: 40px; height: 1px;
+    background: var(--or-ombre);
+    margin-bottom: 1.6rem;
+  }
+  .cta-phrase {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--or-pale);
+    line-height: 1.5;
+    margin-bottom: 2rem;
+    letter-spacing: 0.01em;
+  }
+  .cta-action-btn {
+    font-size: 0.72rem !important;
+    letter-spacing: 0.35em !important;
+    padding: 1.1rem 2.2rem !important;
+    border-color: var(--or) !important;
+    color: var(--or-pale) !important;
+  }
+  .cta-action-btn::before { background: var(--or) !important; }
+</style>
+</head>
+<body>
+
+<div class="line-left"></div>
+<div class="logo">Kairos <span style="font-weight:300;font-size:0.75rem;letter-spacing:0.15em;color:var(--gris-clair);">par Sasha</span></div>
+<div class="partie-badge" id="badge"></div>
+<div class="progress-bar" id="pb" style="width:0%"></div>
+<div class="q-number" id="qn"></div>
+
+<!-- SVG arrow reusable -->
+<svg style="display:none">
+  <symbol id="arr" viewBox="0 0 16 10">
+    <path d="M1 5h14M10 1l5 4-5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<!-- ══ INTRO ══ -->
+<div class="screen active" id="intro">
+  <div class="eyebrow">Audit de Maîtrise · Trois Parties</div>
+  <h1>Le Filtre<br>du <em>Contrôle</em></h1>
+  <p class="body-text">Ce diagnostic ne mesure pas vos ambitions. Il révèle l'écart entre ce que vous croyez contrôler et ce que vous subissez réellement.</p>
+  <p class="body-text" style="font-size:0.7rem;color:var(--gris);margin-bottom:3rem;">12 questions · Aucune bonne réponse · Seulement la vérité</p>
+  <button class="btn" onclick="go('q1')">Commencer l'audit <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q1 ══ -->
+<div class="screen q-screen" id="q1">
+  <div class="step-ind">
+    <span>Question 01 · Partie I</span>
+    <div class="step-line"><div class="sd cur"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div></div>
+  </div>
+  <h2>Quel est votre niveau <em>réel</em> de maîtrise sur le déroulement de vos journées ?</h2>
+  <p class="q-sub">Votre capacité concrète à faire ce que vous aviez prévu, quand vous l'aviez prévu — pas votre satisfaction, mais votre pouvoir d'exécution.</p>
+  <div class="sl-wrap">
+    <div class="sl-val" id="v1">—</div><div class="sl-lbl" id="l1">Déplacez le curseur</div>
+    <div style="height:1.3rem"></div>
+    <div class="sl-labs"><span>1 · Aucune maîtrise</span><span>10 · Maîtrise totale</span></div>
+    <div class="sl-track" id="t1"><div class="sl-fill" id="f1" style="width:0%"></div><div class="sl-thumb" id="h1" style="left:0%"></div></div>
+  </div>
+  <button class="btn dis" id="bq1" onclick="go('q2')">Question suivante <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q2 ══ -->
+<div class="screen q-screen" id="q2">
+  <div class="step-ind">
+    <span>Question 02 · Partie I</span>
+    <div class="step-line"><div class="sd done"></div><div class="sd cur"></div><div class="sd"></div><div class="sd"></div></div>
+  </div>
+  <h2>Si vous nommez honnêtement votre rôle <em>aujourd'hui</em>, lequel choisissez-vous ?</h2>
+  <p class="q-sub">Pas le rôle que vous ambitionnez. Celui que révèle votre semaine passée.</p>
+  <div class="cards">
+    <div class="card" id="cp" onclick="pickBin('pilot')">
+      <span class="ci">✦</span><div class="ct">Le Pilote</div>
+      <div class="cd">Je choisis ma destination. Les turbulences existent, mais c'est moi qui tiens le manche.</div>
+    </div>
+    <div class="card" id="cg" onclick="pickBin('passenger')">
+      <span class="ci">◈</span><div class="ct">Le Passager</div>
+      <div class="cd">Je suis à bord, mais quelqu'un d'autre décide. Je subis la météo et les priorités imposées.</div>
+    </div>
+  </div>
+  <button class="btn dis" id="bq2" onclick="go('q3')">Question suivante <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q3 ══ -->
+<div class="screen q-screen" id="q3">
+  <div class="step-ind">
+    <span>Question 03 · Partie I</span>
+    <div class="step-line"><div class="sd done"></div><div class="sd done"></div><div class="sd cur"></div><div class="sd"></div></div>
+  </div>
+  <h2>En retirant tout facteur extérieur — quel comportement <em>personnel</em> vous sabote le plus ?</h2>
+  <p class="q-sub">Le travail, la famille, le contexte : hors-champ. Ce qui reste, c'est vous. Quelle habitude vous coûte le plus cher en ce moment ?</p>
+  <div class="inp-wrap">
+    <input class="inp" id="i3" type="text" placeholder="Ma procrastination, mon perfectionnisme…" oninput="chk3()" autocomplete="off"/>
+    <div class="inp-hint">Soyez précis — c'est le seul endroit où l'honnêteté compte</div>
+  </div>
+  <button class="btn dis" id="bq3" onclick="go('q4')">Question suivante <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q4 ══ -->
+<div class="screen q-screen" id="q4">
+  <div class="step-ind">
+    <span>Question 04 · Partie I</span>
+    <div class="step-line"><div class="sd done"></div><div class="sd done"></div><div class="sd done"></div><div class="sd cur"></div></div>
+  </div>
+  <h2>À cet instant précis, rester dans votre situation est-il devenu plus <em>insupportable</em> que l'effort de la transformer ?</h2>
+  <p class="q-sub">Ce n'est pas une question sur votre volonté de changer. C'est une mesure de douleur.</p>
+  <div class="sl-wrap">
+    <div class="sl-val" id="v4">—</div><div class="sl-lbl" id="l4">Déplacez le curseur</div>
+    <div style="height:1.3rem"></div>
+    <div class="sl-labs"><span>1 · Je peux encore tenir</span><span>10 · Urgence absolue</span></div>
+    <div class="sl-track" id="t4"><div class="sl-fill" id="f4" style="width:0%"></div><div class="sl-thumb" id="h4" style="left:0%"></div></div>
+  </div>
+  <button class="btn dis" id="bq4" onclick="go('interlude')">Continuer <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ INTERLUDE ══ -->
+<div class="screen" id="interlude">
+  <div class="int-line"></div>
+  <div class="eyebrow">Radiographie Biologique · Partie II</div>
+  <h2>Votre corps est<br>votre premier <em>outil</em><br>pour fonctionner.</h2>
+  <p class="body-text">Ou votre premier frein. La Partie II ne s'intéresse pas à votre hygiène de vie. Elle mesure où se situe votre biologie actuelle — et si elle soutient vos ambitions ou les plafonne en silence.</p>
+  <p class="body-text" style="font-size:0.7rem;color:var(--gris);margin-bottom:2.8rem;">4 piliers · Sommeil · Nutrition · Mouvement · Attention</p>
+  <button class="btn" onclick="go('q5');">Entrer dans la radiographie <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q5 SOMMEIL ══ -->
+<div class="screen q-screen" id="q5">
+  <div class="step-ind">
+    <span>Pilier 01 · Clarté Mentale</span>
+    <div class="step-line"><div class="sd cur"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div></div>
+  </div>
+  <h2>Votre sommeil vous offre-t-il une <em>lucidité totale</em> ou traînez-vous un brouillard mental jusqu'à midi ?</h2>
+  <p class="q-sub">Un décideur qui opère dans le brouillard prend des décisions de moindre qualité. C'est mécanique, pas moral.</p>
+
+  <div style="display:flex;gap:2rem;margin-bottom:1.8rem;flex-wrap:wrap;align-items:flex-end">
+    <div>
+      <div class="inp-hint" style="margin-bottom:0.6rem">Heure de coucher</div>
+      <div class="num-row" style="margin-bottom:0">
+        <input class="num-inp" id="i5coucher" type="time" oninput="chk5()" style="font-size:2rem;width:130px;color:var(--or-pale);border-bottom-color:var(--gris)"/>
+      </div>
+    </div>
+    <div>
+      <div class="inp-hint" style="margin-bottom:0.6rem">Heure de réveil</div>
+      <div class="num-row" style="margin-bottom:0">
+        <input class="num-inp" id="i5reveil" type="time" oninput="chk5()" style="font-size:2rem;width:130px;color:var(--or-pale);border-bottom-color:var(--gris)"/>
+      </div>
+    </div>
+    <div id="q5duree" style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--gris-clair);padding-bottom:0.3rem;transition:color 0.3s"></div>
+  </div>
+
+  <div class="sl-wrap">
+    <div class="sl-val" id="v5">—</div><div class="sl-lbl" id="l5">Déplacez le curseur</div>
+    <div style="height:1.3rem"></div>
+    <div class="sl-labs"><span>1 · Brouillard total</span><span>10 · Énergie explosive</span></div>
+    <div class="sl-track" id="t5"><div class="sl-fill" id="f5" style="width:0%"></div><div class="sl-thumb" id="h5" style="left:0%"></div></div>
+  </div>
+  <button class="btn dis" id="bq5" onclick="go('q6')">Pilier suivant <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q6 NUTRITION ══ -->
+<div class="screen q-screen" id="q6">
+  <div class="step-ind">
+    <span>Pilier 02 · Alimentation</span>
+    <div class="step-line"><div class="sd done"></div><div class="sd cur"></div><div class="sd"></div><div class="sd"></div></div>
+  </div>
+  <h2>Sur une semaine type, votre façon de manger vous <em>donne de l'énergie</em> — ou vous en prend ?</h2>
+  <p class="q-sub">On ne parle pas de régime ni de perfection. Juste de l'effet concret que votre alimentation a sur votre vitalité au quotidien.</p>
+  <div class="cards" style="max-width:640px">
+    <div class="card" id="cn1" onclick="pickNut('carburant')">
+      <div class="ct">Elle me soutient</div>
+      <div class="cd">Je mange de façon assez régulière et équilibrée. Je me sens globalement bien dans mon corps et dans mon énergie.</div>
+    </div>
+    <div class="card" id="cn2" onclick="pickNut('mixte')">
+      <div class="ct">C'est variable</div>
+      <div class="cd">Certaines semaines sont bonnes, d'autres moins. Le stress ou le manque de temps me font souvent dévier.</div>
+    </div>
+    <div class="card" id="cn3" onclick="pickNut('bequille')">
+      <div class="ct">Elle me pèse</div>
+      <div class="cd">Je sais que je ne mange pas bien, et je le ressens — fatigue, manque d'énergie, habitudes que j'ai du mal à changer.</div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:1.6rem">
+    <p style="font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gris-clair);margin-bottom:1.1rem;">Sur les 7 derniers jours, combien de fois avez-vous mangé…</p>
+    <div style="display:flex;gap:2.5rem;flex-wrap:wrap;align-items:flex-end">
+      <div>
+        <div class="inp-hint" style="margin-bottom:0.5rem">Repas préparés / équilibrés</div>
+        <div class="num-row" style="margin-bottom:0">
+          <input class="num-inp" id="i6fast" type="number" min="0" max="21" placeholder="0" oninput="s.q6fast=this.value" style="font-size:2.2rem;width:80px;color:var(--or-pale)"/>
+          <span class="num-unit">fois / semaine</span>
+        </div>
+      </div>
+      <div>
+        <div class="inp-hint" style="margin-bottom:0.5rem">Repas de crise / compensation</div>
+        <div class="num-row" style="margin-bottom:0">
+          <input class="num-inp" id="i6crise" type="number" min="0" max="21" placeholder="0" oninput="s.q6crise=this.value" style="font-size:2.2rem;width:80px;color:var(--or-pale)"/>
+          <span class="num-unit">fois / semaine</span>
+        </div>
+      </div>
+    </div>
+    <div class="inp-hint" style="margin-top:0.8rem;font-style:italic;text-transform:none;letter-spacing:0.03em">Un repas de compensation, c'est celui qu'on s'accorde après une journée difficile — par besoin de réconfort ou manque de temps.</div>
+  </div>
+
+  <button class="btn dis" id="bq6" onclick="go('q7')">Pilier suivant <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q7 MOUVEMENT ══ -->
+<div class="screen q-screen" id="q7">
+  <div class="step-ind">
+    <span>Pilier 03 · Entretien de soi</span>
+    <div class="step-line"><div class="sd done"></div><div class="sd done"></div><div class="sd cur"></div><div class="sd"></div></div>
+  </div>
+  <h2>Sur les 7 derniers jours, comment avez-vous <em>pris soin de votre corps</em> par le mouvement ?</h2>
+  <p class="q-sub">Marche, étirements, activité physique, yoga, vélo… peu importe la forme. Il s'agit simplement de mesurer l'attention que vous vous portez à vous-même.</p>
+  <div class="sl-wrap">
+    <div class="sl-val" id="v7">—</div><div class="sl-lbl" id="l7">Déplacez le curseur</div>
+    <div style="height:1.3rem"></div>
+    <div class="sl-labs"><span>1 · Pas du tout</span><span>10 · Très régulièrement</span></div>
+    <div class="sl-track" id="t7"><div class="sl-fill" id="f7" style="width:0%"></div><div class="sl-thumb" id="h7" style="left:0%"></div></div>
+  </div>
+  <button class="btn dis" id="bq7" onclick="go('q8')">Pilier suivant <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q8 ATTENTION ══ -->
+<div class="screen q-screen" id="q8">
+  <div class="step-ind">
+    <span>Pilier 04 · Gestion de l'Attention</span>
+    <div class="step-line"><div class="sd done"></div><div class="sd done"></div><div class="sd done"></div><div class="sd cur"></div></div>
+  </div>
+  <h2>Combien d'heures par jour offrez-vous aux <em>algorithmes</em> — et ce temps est-il un choix ou une fuite ?</h2>
+  <p class="q-sub">Vérifiez maintenant votre temps d'écran dans les réglages de votre smartphone. Réseaux sociaux, messageries, divertissement passif.</p>
+  <div class="num-row">
+    <input class="num-inp" id="i8h" type="number" min="0" max="24" placeholder="0" oninput="chk8h()"/>
+    <span class="num-unit">heures / jour</span>
+  </div>
+  <div class="sl-wrap">
+    <p style="font-size:0.66rem;color:var(--gris-clair);letter-spacing:0.07em;margin-bottom:1.1rem;">Ces heures sont-elles un choix conscient et productif, ou une fuite hors de votre contrôle ?</p>
+    <div class="sl-val" id="v8">—</div><div class="sl-lbl" id="l8">Déplacez le curseur</div>
+    <div style="height:1.1rem"></div>
+    <div class="sl-labs"><span>1 · Fuite totale</span><span>10 · Choix conscient</span></div>
+    <div class="sl-track" id="t8"><div class="sl-fill" id="f8" style="width:0%"></div><div class="sl-thumb" id="h8" style="left:0%"></div></div>
+  </div>
+  <button class="btn dis" id="bq8" onclick="go('interlude2')">Continuer <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ INTERLUDE 2 ══ -->
+<div class="screen" id="interlude2">
+  <div class="int-line2"></div>
+  <div class="eyebrow">Vers un nouveau quotidien · Étape III</div>
+  <h2>Le changement<br>ne se fait pas<br>du jour au <em>lendemain</em>.</h2>
+  <p class="body-text">KAIROS accompagne des personnes qui souhaitent modifier leurs habitudes de vie, pas à pas, pour retrouver un quotidien qui leur ressemble et dans lequel elles se sentent bien.</p>
+  <p class="body-text" style="font-size:0.7rem;color:var(--gris);margin-bottom:2.8rem;">4 questions · Vos envies · Vos freins · Votre rythme · Votre motivation</p>
+  <button class="btn" onclick="go('q9');">Continuer <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q9 ENVIES ══ -->
+<div class="screen q-screen" id="q9">
+  <div class="step-ind">
+    <span>Question 01 · Vos envies</span>
+    <div class="step-line"><div class="sd cur"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div></div>
+  </div>
+  <h2>Si vous pouviez changer <em>une seule habitude</em> dans votre quotidien, laquelle vous apporterait le plus de bien-être ?</h2>
+  <p class="q-sub">Pas besoin que ce soit grand ou spectaculaire. Parfois, c'est une toute petite chose qui change tout — se coucher plus tôt, marcher 20 minutes, manger plus tranquillement...</p>
+  <div class="inp-wrap">
+    <textarea class="textarea-inp" id="i9" placeholder="Je changerais…" oninput="chk9()" rows="2"></textarea>
+    <div class="inp-hint">Pensez à ce qui vous manque le plus en ce moment</div>
+  </div>
+  <button class="btn dis" id="bq9" onclick="go('q10')">Question suivante <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q10 FREINS ══ -->
+<div class="screen q-screen" id="q10">
+  <div class="step-ind">
+    <span>Question 02 · Vos freins</span>
+    <div class="step-line"><div class="sd done"></div><div class="sd cur"></div><div class="sd"></div><div class="sd"></div></div>
+  </div>
+  <h2>Qu'est-ce qui vous a <em>freiné jusqu'ici</em> dans la mise en place de ces changements ?</h2>
+  <p class="q-sub">Le manque de temps, la fatigue, ne pas savoir par où commencer, l'impression que ça ne durera pas… Il n'y a pas de mauvaise réponse, juste votre réalité.</p>
+  <div class="inp-wrap">
+    <input class="inp" id="i10" type="text" placeholder="Ce qui m'a freiné, c'est…" oninput="chk10()" autocomplete="off"/>
+    <div class="inp-hint">Nommer un frein, c'est déjà commencer à le dépasser</div>
+  </div>
+  <button class="btn dis" id="bq10" onclick="go('q11')">Question suivante <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q11 RYTHME ══ -->
+<div class="screen q-screen" id="q11">
+  <div class="step-ind">
+    <span>Question 03 · Votre rythme</span>
+    <div class="step-line"><div class="sd done"></div><div class="sd done"></div><div class="sd cur"></div><div class="sd"></div></div>
+  </div>
+  <h2>À quel point vous sentez-vous <em>prêt(e) à avancer</em>, même petit à petit, vers ces changements ?</h2>
+  <p class="q-sub">Il n'y a pas de bonne vitesse. Certains avancent doucement et durablement, d'autres ont besoin d'un élan plus fort. L'important, c'est votre rythme à vous.</p>
+  <div class="sl-wrap">
+    <div class="sl-val" id="v11">—</div><div class="sl-lbl" id="l11">Déplacez le curseur</div>
+    <div style="height:1.3rem"></div>
+    <div class="sl-labs"><span>1 · Pas encore prêt(e)</span><span>10 · Prêt(e) à commencer dès maintenant</span></div>
+    <div class="sl-track" id="t11"><div class="sl-fill" id="f11" style="width:0%"></div><div class="sl-thumb" id="h11" style="left:0%"></div></div>
+  </div>
+  <button class="btn dis" id="bq11" onclick="go('q12')">Question suivante <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ Q12 MOTIVATION ══ -->
+<div class="screen q-screen" id="q12">
+  <div class="step-ind">
+    <span>Question 04 · Votre motivation</span>
+    <div class="step-line"><div class="sd done"></div><div class="sd done"></div><div class="sd done"></div><div class="sd cur"></div></div>
+  </div>
+  <h2>Qu'est-ce qui vous donne <em>envie de changer</em> aujourd'hui — pour vous, pas pour les autres ?</h2>
+  <p class="q-sub">Retrouver de l'énergie, se sentir mieux dans son corps, reprendre confiance, avoir plus de temps pour soi… Votre "pourquoi" est la boussole de tout ce qui suivra.</p>
+  <div class="inp-wrap">
+    <textarea class="textarea-inp" id="i12" placeholder="Ce qui me donne envie, c'est…" oninput="chk12()" rows="3"></textarea>
+    <div class="inp-hint">Plus c'est personnel, plus c'est puissant</div>
+  </div>
+  <button class="btn dis" id="bq12" onclick="showResult()">Voir mon bilan complet <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div class="screen" id="result">
+  <div class="res-tag p1">Partie I · Le Miroir</div>
+  <h2>Votre <em>contrôle</em></h2>
+  <div class="r-grid">
+    <div class="r-cell"><div class="r-lbl">Maîtrise</div><div class="r-val" id="r1">—</div></div>
+    <div class="r-cell"><div class="r-lbl">Posture</div><div class="r-val" id="r2">—</div></div>
+    <div class="r-cell"><div class="r-lbl">Saboteur</div><div class="r-val" id="r3" style="font-size:0.9rem">—</div></div>
+    <div class="r-cell"><div class="r-lbl">Urgence</div><div class="r-val" id="r4">—</div></div>
+  </div>
+  <div class="verdict" id="vp1"></div>
+  <div class="divider"></div>
+  <div class="res-tag p1">Partie II · Radiographie Biologique</div>
+  <h2>Votre <em>biologie</em></h2>
+  <div class="r-grid">
+    <div class="r-cell"><div class="r-lbl">Sommeil</div><div class="r-val" id="r5">—</div></div>
+    <div class="r-cell"><div class="r-lbl">Nutrition</div><div class="r-val" id="r6">—</div></div>
+    <div class="r-cell"><div class="r-lbl">Mouvement</div><div class="r-val" id="r7">—</div></div>
+    <div class="r-cell"><div class="r-lbl">Attention</div><div class="r-val" id="r8" style="font-size:0.9rem">—</div></div>
+  </div>
+  <div class="verdict" id="vp2"></div>
+  <div class="divider" style="background:linear-gradient(to right,var(--bas-sombre),transparent)"></div>
+  <div class="res-tag p1">Étape III · Vers un nouveau quotidien</div>
+  <h2>Votre <em>élan</em></h2>
+  <div class="r-grid">
+    <div class="r-cell"><div class="r-lbl">Habitude à changer</div><div class="r-val" id="r9" style="font-size:0.85rem">—</div></div>
+    <div class="r-cell"><div class="r-lbl">Frein identifié</div><div class="r-val" id="r10" style="font-size:0.85rem">—</div></div>
+    <div class="r-cell"><div class="r-lbl">Prêt(e) à avancer</div><div class="r-val" id="r11">—</div></div>
+    <div class="r-cell"><div class="r-lbl">Motivation</div><div class="r-val" id="r12" style="font-size:0.75rem;line-height:1.4">—</div></div>
+  </div>
+  <div class="verdict" id="vp3"></div>
+
+  <!-- CTA KAIROS -->
+  <div class="kairos-cta">
+    <div class="cta-line"></div>
+    <p class="cta-phrase">KAIROS est là pour vous accompagner pas à pas, à votre rythme, en transformant cette envie en habitudes concrètes et durables.</p>
+    <button class="btn cta-action-btn" id="ctaBtn" onclick="toggleContact()">
+      Je passe à l'action
+      <svg class="arr"><use href="#arr"/></svg>
+    </button>
+  </div>
+
+  <!-- FORMULAIRE CONTACT -->
+  <div id="contactForm" style="display:none;max-width:520px;margin-top:2rem">
+    <div class="res-tag p1" style="margin-bottom:1.2rem">Vos coordonnées</div>
+    <p style="font-size:0.75rem;font-weight:300;color:var(--gris-clair);line-height:1.8;margin-bottom:2rem;letter-spacing:0.03em">Laissez-moi vos coordonnées — je vous contacte personnellement pour qu'on échange sur votre situation et voir comment je peux vous accompagner.</p>
+
+    <div style="display:flex;flex-direction:column;gap:1.6rem">
+      <div>
+        <div class="inp-hint" style="margin-bottom:0.5rem">Prénom et nom</div>
+        <input class="inp" id="cNom" type="text" placeholder="Marie Dupont" autocomplete="name"/>
+      </div>
+      <div>
+        <div class="inp-hint" style="margin-bottom:0.5rem">Numéro de téléphone</div>
+        <input class="inp" id="cTel" type="tel" placeholder="+33 6 00 00 00 00" autocomplete="tel"/>
+      </div>
+      <div>
+        <div class="inp-hint" style="margin-bottom:0.5rem">Adresse email</div>
+        <input class="inp" id="cEmail" type="email" placeholder="marie@exemple.fr" autocomplete="email"/>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:flex-start;gap:0.9rem;margin-top:1.8rem;max-width:510px">
+      <input type="checkbox" id="rgpd" style="margin-top:0.25rem;accent-color:var(--or);width:14px;height:14px;flex-shrink:0;cursor:pointer" onchange="chkRgpd()"/>
+      <label for="rgpd" style="font-size:0.68rem;font-weight:300;color:var(--gris-clair);line-height:1.7;cursor:pointer;letter-spacing:0.03em">
+        J'accepte que mes données personnelles (nom, téléphone, email) soient utilisées par KAIROS par Sasha dans le seul but de me recontacter dans le cadre d'un accompagnement. Ces données ne seront pas transmises à des tiers et pourront être supprimées sur simple demande.
+      </label>
+    </div>
+
+    <div id="contactMsg" style="display:none;margin-top:1.2rem;font-size:0.75rem;letter-spacing:0.08em;color:var(--or-pale)"></div>
+
+    <button class="btn dis" style="margin-top:1.6rem" id="submitBtn" onclick="submitContact()">
+      Envoyer mes coordonnées
+      <svg class="arr"><use href="#arr"/></svg>
+    </button>
+  </div>
+
+  <button class="btn" style="margin-top:2rem;opacity:0.4;font-size:0.6rem" onclick="go('intro');reset()">Recommencer le bilan <svg class="arr"><use href="#arr"/></svg></button>
+</div>
+
+<script>
+const s = { q1:null,q2:null,q3:'',q4:null, q5:null,q5coucher:'',q5reveil:'',q5duree:null,q6:null,q6c:'',q6fast:null,q6crise:null,q7:null,q8h:null,q8:null, q9:'',q10:'',q11:null,q12:'' };
+
+const SCREENS = ['intro','q1','q2','q3','q4','interlude','q5','q6','q7','q8','interlude2','q9','q10','q11','q12','result'];
+const PROG = {intro:0,q1:7,q2:14,q3:21,q4:28,interlude:34,q5:41,q6:49,q7:56,q8:63,interlude2:68,q9:75,q10:82,q11:89,q12:95,result:100};
+const BADGE = {intro:'',q1:'Étape I · Le Miroir',q2:'Étape I · Le Miroir',q3:'Étape I · Le Miroir',q4:'Étape I · Le Miroir',interlude:'—',q5:'Étape II · Radiographie',q6:'Étape II · Radiographie',q7:'Étape II · Radiographie',q8:'Étape II · Radiographie',interlude2:'—',q9:'Étape III · Nouveau quotidien',q10:'Étape III · Nouveau quotidien',q11:'Étape III · Nouveau quotidien',q12:'Étape III · Nouveau quotidien',result:'Bilan Complet'};
+const QNUM = {q1:'01',q2:'02',q3:'03',q4:'04',q5:'01',q6:'02',q7:'03',q8:'04',q9:'01',q10:'02',q11:'03',q12:'04'};
+
+function go(id) {
+  SCREENS.forEach(x=>document.getElementById(x).classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('pb').style.width = PROG[id]+'%';
+  document.getElementById('badge').textContent = BADGE[id]||'';
+  document.getElementById('qn').textContent = QNUM[id]||'';
+}
+
+function activatePart2() { document.body.classList.add('part2'); }
+function activatePart3() { document.body.classList.remove('part2'); document.body.classList.add('part3'); }
+
+// SLIDER
+function mkSlider(tid,fid,hid,vid,lid,key,btn,labs){
+  const track=document.getElementById(tid),fill=document.getElementById(fid),
+        thumb=document.getElementById(hid),valEl=document.getElementById(vid),
+        lblEl=document.getElementById(lid);
+  let drag=false;
+  function upd(x){
+    const r=track.getBoundingClientRect();
+    const p=Math.max(0,Math.min(1,(x-r.left)/r.width));
+    const v=Math.round(p*9)+1, pd=((v-1)/9)*100;
+    fill.style.width=pd+'%'; thumb.style.left=pd+'%';
+    valEl.textContent=v; lblEl.textContent=labs[v-1]||'';
+    s[key]=v;
+    if(btn) document.getElementById(btn).classList.remove('dis');
+    if(key==='q8') chk8();
+    if(key==='q5') chk5();
+  }
+  track.addEventListener('mousedown',e=>{drag=true;upd(e.clientX);});
+  track.addEventListener('touchstart',e=>{drag=true;upd(e.touches[0].clientX);},{passive:true});
+  document.addEventListener('mousemove',e=>{if(drag)upd(e.clientX);});
+  document.addEventListener('touchmove',e=>{if(drag)upd(e.touches[0].clientX);},{passive:true});
+  document.addEventListener('mouseup',()=>drag=false);
+  document.addEventListener('touchend',()=>drag=false);
+}
+
+mkSlider('t1','f1','h1','v1','l1','q1','bq1',['Je subis tout','Très peu de contrôle','Rarement maître','Plus souvent dévié','Équilibre fragile','Quelques reprises','Plutôt en contrôle','Bonne maîtrise','Très en contrôle','Maîtrise totale']);
+mkSlider('t4','f4','h4','v4','l4','q4','bq4',['Je peux tenir longtemps',"C'est supportable",'Ça commence à peser','La frustration monte','Régulièrement difficile','Je commence à craquer','Clairement insupportable','Je suis à bout','Je ne peux plus attendre','Urgence absolue']);
+mkSlider('t5','f5','h5','v5','l5','q5',null,['Brouillard total','Encore très lourd','Lent à démarrer','Fatigue résiduelle','Moyen',"Quelques matins clairs",'Souvent lucide','Clarté régulière','Presque toujours vif','Énergie explosive dès le réveil']);
+
+function chk5(){
+  const coucher=document.getElementById('i5coucher').value;
+  const reveil=document.getElementById('i5reveil').value;
+  s.q5coucher=coucher; s.q5reveil=reveil;
+  const dureeEl=document.getElementById('q5duree');
+  if(coucher && reveil){
+    const [ch,cm]=coucher.split(':').map(Number);
+    const [rh,rm]=reveil.split(':').map(Number);
+    let totalMin=(rh*60+rm)-(ch*60+cm);
+    if(totalMin<=0) totalMin+=1440;
+    const h=Math.floor(totalMin/60), m=totalMin%60;
+    s.q5duree=totalMin;
+    const color = totalMin<360?'var(--bio)':(totalMin>=420&&totalMin<=540)?'var(--bas-pale)':'var(--or-pale)';
+    dureeEl.style.color=color;
+    dureeEl.textContent=`${h}h${m>0?m+'min':''} de sommeil`;
+  } else {
+    dureeEl.textContent='';
+    s.q5duree=null;
+  }
+  // unlock only when times filled AND slider moved
+  document.getElementById('bq5').classList.toggle('dis', !coucher||!reveil||s.q5===null);
+}
+mkSlider('t7','f7','h7','v7','l7','q7','bq7',['Aucun mouvement','Très peu','Quelques minutes','Un peu plus','De temps en temps','Quelques fois dans la semaine','Assez régulièrement','Plusieurs fois par semaine','Presque chaque jour','Chaque jour, avec plaisir']);
+mkSlider('t8','f8','h8','v8','l8','q8',null,['Fuite totale hors contrôle','Très peu conscient','Rarement délibéré','Souvent par défaut','Partiellement choisi','Assez conscient','Majoritairement choisi','Bien maîtrisé','Très délibéré','Choix pleinement conscient']);
+mkSlider('t11','f11','h11','v11','l11','q11','bq11',['Pas encore prêt(e)','J\'ai besoin d\'y réfléchir','Je commence à y penser','Quelques envies timides','L\'envie est là','Je me sens assez prêt(e)','Plutôt motivé(e)','Bien décidé(e)','Très motivé(e)','Prêt(e) à commencer dès maintenant']);
+
+function pickBin(c){
+  s.q2=c;
+  document.getElementById('cp').classList.toggle('sel',c==='pilot');
+  document.getElementById('cg').classList.toggle('sel',c==='passenger');
+  document.getElementById('bq2').classList.remove('dis');
+}
+function pickNut(c){
+  s.q6=c;
+  ['cn1','cn2','cn3'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  document.getElementById({carburant:'cn1',mixte:'cn2',bequille:'cn3'}[c]).classList.add('sel');
+  document.getElementById('bq6').classList.remove('dis');
+}
+function chk3(){
+  const v=document.getElementById('i3').value.trim(); s.q3=v;
+  document.getElementById('bq3').classList.toggle('dis',v.length<3);
+}
+function chk8h(){
+  const v=parseFloat(document.getElementById('i8h').value);
+  if(!isNaN(v)&&v>=0){s.q8h=v; chk8();}
+}
+function chk8(){
+  document.getElementById('bq8').classList.toggle('dis', s.q8h===null||s.q8===null);
+}
+function chk9(){
+  const v=document.getElementById('i9').value.trim(); s.q9=v;
+  document.getElementById('bq9').classList.toggle('dis',v.length<3);
+}
+function chk10(){
+  const v=document.getElementById('i10').value.trim(); s.q10=v;
+  document.getElementById('bq10').classList.toggle('dis',v.length<3);
+}
+function chk12(){
+  const v=document.getElementById('i12').value.trim(); s.q12=v;
+  document.getElementById('bq12').classList.toggle('dis',v.length<1);
+}
+
+function showResult(){
+  document.getElementById('r1').textContent=(s.q1||'—')+(s.q1?' / 10':'');
+  document.getElementById('r2').textContent=s.q2==='pilot'?'Le Pilote':'Le Passager';
+  document.getElementById('r3').textContent=s.q3||'—';
+  document.getElementById('r4').textContent=(s.q4||'—')+(s.q4?' / 10':'');
+  const dureeStr = s.q5duree ? `${Math.floor(s.q5duree/60)}h${s.q5duree%60>0?s.q5duree%60+'min':''}`:'';
+  document.getElementById('r5').textContent=s.q5?(dureeStr?`${dureeStr} · ${s.q5}/10`:`${s.q5}/10`):'—';
+  const nutLabel = {carburant:'Elle me soutient',mixte:'Variable',bequille:'Elle me pèse'}[s.q6]||'—';
+  const nutExtra = (s.q6fast!==null||s.q6crise!==null) ? ` · ${s.q6fast||0}× préparés, ${s.q6crise||0}× crise` : '';
+  document.getElementById('r6').textContent = nutLabel + nutExtra;
+  document.getElementById('r7').textContent=(s.q7||'—')+(s.q7?' / 10':'');
+  document.getElementById('r8').textContent=s.q8h!==null?`${s.q8h}h / jour · Conscience ${s.q8}/10`:'—';
+  document.getElementById('r9').textContent=s.q9||'—';
+  document.getElementById('r10').textContent=s.q10||'—';
+  document.getElementById('r11').textContent=(s.q11||'—')+(s.q11?' / 10':'');
+  document.getElementById('r12').textContent=s.q12||'—';
+  document.getElementById('vp1').innerHTML=vp1();
+  document.getElementById('vp2').innerHTML=vp2();
+  document.getElementById('vp3').innerHTML=vp3();
+  go('result');
+}
+
+function vp1(){
+  const m=s.q1,u=s.q4,sb=s.q3;
+  if(m<=4&&u>=7) return `Vous venez de nommer ce que la plupart refusent de voir. Une maîtrise de <strong>${m}/10</strong> avec une urgence à <strong>${u}/10</strong> — vous n'êtes plus dans la réflexion, vous êtes dans la nécessité. Le saboteur <strong>"${sb}"</strong> n'est pas un défaut de caractère. C'est un système non recâblé. C'est précisément là qu'intervient KAIROS.`;
+  if(m<=5&&u>=5) return `Une maîtrise de <strong>${m}/10</strong> avec une pression intérieure à <strong>${u}/10</strong> : vous sentez que quelque chose doit changer, sans avoir encore franchi le seuil. Le frein <strong>"${sb}"</strong> est nommé — il manque désormais la structure pour le transformer en résultat.`;
+  if(m>=7&&u<=4) return `Vous opérez avec un contrôle solide (<strong>${m}/10</strong>). Ce diagnostic révèle que <strong>"${sb}"</strong> représente probablement votre prochain plafond de verre — pas une faiblesse, mais la limite de votre système actuel. Les performeurs KAIROS ne sont pas en crise. Ils cherchent le niveau suivant.`;
+  return `Maîtrise à <strong>${m}/10</strong>, urgence à <strong>${u}/10</strong>, saboteur nommé : <strong>"${sb}"</strong>. Ces trois données forment le point de départ d'un travail de fond. KAIROS existe pour transformer ce constat en trajectoire mesurable.`;
+}
+
+function vp2(){
+  const sm=s.q5,mv=s.q7,at=s.q8,h=s.q8h,nutNeg=s.q6==='bequille',nutMix=s.q6==='mixte';
+  const fast=parseInt(s.q6fast)||0, crise=parseInt(s.q6crise)||0;
+  const pts=[];
+  if(sm<=5) pts.push(`un réveil difficile (<strong>${sm}/10</strong>${s.q5duree?` pour ${Math.floor(s.q5duree/60)}h de sommeil`:''}) qui impacte votre clarté mentale dès le matin`);
+  if(mv<=5) pts.push(`peu de mouvement cette semaine (<strong>${mv}/10</strong>) — le corps a besoin d'être sollicité régulièrement pour maintenir un bon niveau d'énergie et de bien-être`);
+  if(at<=4&&h>=3) pts.push(`<strong>${h}h/jour</strong> sur écrans avec un usage peu conscient (<strong>${at}/10</strong>) — une ressource attentionnelle qui s'évapore sans qu'on s'en aperçoive`);
+  if(nutNeg) pts.push(`une alimentation qui pèse sur votre vitalité${crise>0?` — <strong>${crise} repas de compensation</strong> cette semaine en témoignent`:''}${fast>0?` et <strong>${fast} repas préparés ou livrés</strong>`:''}`);
+  else if(nutMix&&(fast>=4||crise>=3)) pts.push(`une alimentation variable avec <strong>${fast} repas préparés</strong> et <strong>${crise} repas de compensation</strong> cette semaine — des signaux qui méritent attention`);
+  if(pts.length>0)
+    return `Ce que cette partie révèle, ce ne sont pas des défauts — ce sont des habitudes qui se sont installées, souvent pour de bonnes raisons. ${pts.join(' ; ')}. Ces éléments ont un effet réel sur votre énergie et votre capacité à fonctionner au mieux. La bonne nouvelle : ils sont tous modifiables.`;
+  return `Votre hygiène de vie montre une base solide cette semaine — sommeil à <strong>${sm}/10</strong>, vitalité corporelle à <strong>${mv}/10</strong>${fast>0?`, <strong>${fast} repas préparés</strong>`:''}. Le point à observer : la gestion de l'attention avec <strong>${h||'?'}h/jour</strong> sur écrans. C'est souvent là que l'énergie récupérée se perd silencieusement.`;
+}
+
+function vp3(){
+  const pret=s.q11, envie=s.q9, frein=s.q10, motiv=s.q12;
+  if(pret>=8)
+    return `Vous avez nommé ce que vous souhaitez changer — <strong>"${envie}"</strong> — et vous vous sentez prêt(e) à avancer (<strong>${pret}/10</strong>). C'est exactement le point de départ idéal. KAIROS est là pour vous accompagner pas à pas, à votre rythme, en transformant cette envie en habitudes concrètes et durables.`;
+  if(pret>=5)
+    return `L'envie est là — <strong>"${envie}"</strong> — et c'est déjà beaucoup. Vous avez aussi identifié ce qui vous a freiné jusqu'ici : <strong>"${frein}"</strong>. Ce n'est pas un manque de volonté, c'est simplement qu'avancer seul(e) est souvent plus difficile. C'est précisément là que KAIROS peut faire la différence.`;
+  return `Vous n'êtes peut-être pas encore tout à fait prêt(e) — et c'est normal. Le simple fait d'avoir rempli ce bilan montre que quelque chose en vous cherche à évoluer. KAIROS est là quand le moment vous semblera juste, sans pression.`;
+}
+
+function toggleContact(){
+  const f = document.getElementById('contactForm');
+  const btn = document.getElementById('ctaBtn');
+  if(f.style.display === 'none'){
+    f.style.display = 'block';
+    btn.style.opacity = '0.4';
+    f.scrollIntoView({behavior:'smooth', block:'start'});
+  } else {
+    f.style.display = 'none';
+    btn.style.opacity = '1';
+  }
+}
+
+function chkRgpd(){
+  const checked = document.getElementById('rgpd').checked;
+  document.getElementById('submitBtn').classList.toggle('dis', !checked);
+}
+
+async function submitContact(){
+  const nom   = document.getElementById('cNom').value.trim();
+  const tel   = document.getElementById('cTel').value.trim();
+  const email = document.getElementById('cEmail').value.trim();
+  const msg   = document.getElementById('contactMsg');
+  const btn   = document.getElementById('submitBtn');
+
+  if(!nom){ msg.style.display='block'; msg.style.color='#c97a7a'; msg.textContent='Merci d\'indiquer votre prénom et nom.'; return; }
+  if(!tel && !email){ msg.style.display='block'; msg.style.color='#c97a7a'; msg.textContent='Merci d\'indiquer au moins un moyen de vous contacter.'; return; }
+
+  // Compile full results — supprimé (données envoyées champ par champ)
+
+  btn.textContent = 'Envoi en cours…';
+  btn.style.pointerEvents = 'none';
+  btn.style.opacity = '0.5';
+
+  const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxQG6CSc70BNJCjGpXnRrUJMiMdcL9jsgWeSksV6x3iam8FHTljaW7q8GZkmDkY7nDZ/exec';
+
+  const payload = {
+    nom, telephone: tel, email,
+    q1: s.q1, q2: s.q2==='pilot'?'Le Pilote':'Le Passager',
+    q3: s.q3, q4: s.q4,
+    q5: s.q5, q5coucher: s.q5coucher||'', q5reveil: s.q5reveil||'',
+    q5duree: s.q5duree ? Math.floor(s.q5duree/60)+'h'+(s.q5duree%60>0?s.q5duree%60+'min':'') : '',
+    q6: {carburant:'Elle me soutient',mixte:'Variable',bequille:'Elle me pèse'}[s.q6]||'',
+    q6fast: s.q6fast||0, q6crise: s.q6crise||0,
+    q7: s.q7, q8h: s.q8h||'', q8: s.q8,
+    q9: s.q9, q10: s.q10, q11: s.q11, q12: s.q12
+  };
+
+  // Envoi via iframe cachée (contourne les restrictions CORS de Google Apps Script)
+  const iframe = document.createElement('iframe');
+  iframe.name = 'hidden_iframe';
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = ENDPOINT;
+  form.target = 'hidden_iframe';
+  form.style.display = 'none';
+
+  Object.entries(payload).forEach(([k, v]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = k;
+    input.value = v ?? '';
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+
+  // Nettoyage après envoi
+  setTimeout(() => {
+    document.body.removeChild(form);
+    document.body.removeChild(iframe);
+  }, 3000);
+
+  msg.style.display = 'block';
+  msg.style.color = 'var(--or-pale)';
+  msg.textContent = 'Reçu ✦ Je vous contacte très bientôt.';
+  btn.style.display = 'none';
+  document.getElementById('cNom').disabled = true;
+  document.getElementById('cTel').disabled = true;
+  document.getElementById('cEmail').disabled = true;
+}
+
+function reset(){
+  Object.keys(s).forEach(k=>s[k]=typeof s[k]==='string'?'':null);
+  [['f1','h1','v1','l1'],['f4','h4','v4','l4'],['f5','h5','v5','l5'],['f7','h7','v7','l7'],['f8','h8','v8','l8'],['f11','h11','v11','l11']].forEach(([f,h,v,l])=>{
+    document.getElementById(f).style.width='0%';
+    document.getElementById(h).style.left='0%';
+    document.getElementById(v).textContent='—';
+    document.getElementById(l).textContent='Déplacez le curseur';
+  });
+  ['bq1','bq2','bq3','bq4','bq5','bq6','bq7','bq8','bq9','bq10','bq11','bq12'].forEach(id=>document.getElementById(id).classList.add('dis'));
+  ['cp','cg','cn1','cn2','cn3'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  ['i3','i9','i10','i12'].forEach(id=>document.getElementById(id).value='');
+  ['i6fast','i6crise','i8h'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('i5coucher').value='';
+  document.getElementById('i5reveil').value='';
+  document.getElementById('q5duree').textContent='';
+  document.body.classList.remove('part2','part3');
+  // reset contact
+  ['cNom','cTel','cEmail'].forEach(id=>{ const el=document.getElementById(id); if(el){el.value='';el.disabled=false;} });
+  const cf=document.getElementById('contactForm'); if(cf) cf.style.display='none';
+  const cm=document.getElementById('contactMsg'); if(cm) cm.style.display='none';
+  const sb=document.getElementById('submitBtn'); if(sb){sb.style.display='';sb.style.opacity='1';sb.style.pointerEvents='auto';sb.textContent='Envoyer mes coordonnées';}
+  const cb=document.getElementById('ctaBtn'); if(cb) cb.style.opacity='1';
+  const rg=document.getElementById('rgpd'); if(rg) rg.checked=false;
+}
+</script>
+</body>
+</html>
